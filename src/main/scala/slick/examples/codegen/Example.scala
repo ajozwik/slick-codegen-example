@@ -17,7 +17,7 @@ import slick.examples.codegen.Tables.profile.api.*
 object Example extends IOApp.Simple {
   // connection info for a pre-populated throw-away, in-memory db for this demo, which is freshly initialized on every
   // run
-  val url = "jdbc:h2:mem:test;INIT=runscript from 'src/main/sql/create.sql'"
+  val url = "jdbc:h2:mem:test;INIT=runscript from 'src/main/sql/create-schema.sql'\\;runscript from 'src/main/sql/create.sql'"
 
   def run: IO[Unit] = Database.resource(DatabaseConfig.forURL(H2Profile, url, driver = "org.h2.Driver")).use { db =>
     // Using generated code. Our Build.sbt makes sure they are generated before compilation.

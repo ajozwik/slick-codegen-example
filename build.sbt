@@ -41,7 +41,7 @@ slick := {
   val dir       = (Compile / sourceManaged).value
   val outputDir = dir / "slick"
   val url       =
-    "jdbc:h2:mem:test;INIT=runscript from 'src/main/sql/create.sql'" // connection info
+    "jdbc:h2:mem:test;INIT=runscript from 'src/main/sql/create-schema.sql'" // connection info
   val jdbcDriver  = "org.h2.Driver"
   val slickDriver = "slick.jdbc.H2Profile"
   val pkg         = "demo"
@@ -49,18 +49,35 @@ slick := {
   val cp = (Compile / dependencyClasspath).value
   val s  = streams.value
   given FileConverter = fileConverter.value
-
+  sbt.IO.delete(outputDir)
   runner.value
     .run(
       "slick.codegen.SourceCodeGenerator",
       cp.files,
-      Array(slickDriver, jdbcDriver, url, outputDir.getPath, pkg),
+      Seq(
+        slickDriver,
+        jdbcDriver,
+        url,
+        outputDir.getPath,
+        pkg,
+        "sa",
+        "",
+        true.toString,
+        "slick.codegen.SourceCodeGenerator",
+        true.toString
+      ),
       s.log
     )
     .failed
     .foreach(e => sys.error(e.getMessage))
 
-  val file = outputDir / pkg / "Tables.scala"
+  pkg
+    .split("\\.")
+    .foldLeft(outputDir) { (acc, d) =>
+      acc / d
+    }
+    .listFiles
+    .toSeq
+    .filter(_.getName.endsWith(".scala"))
 
-  Seq(file)
 }
